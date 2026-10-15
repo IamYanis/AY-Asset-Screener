@@ -1,1 +1,37 @@
-asset_id,name,asset_type,ticker,isin,eligibility,verified_at,source
+asset_id,name,asset_type,ticker,isin,eligibility,verified_at,source,yahoo_ticker
+watch-AAPL,Apple,stock,AAPL,,unverified,,https://finance.yahoo.com/quote/AAPL/,AAPL
+watch-MSFT,Microsoft,stock,MSFT,,unverified,,https://finance.yahoo.com/quote/MSFT/,MSFT
+watch-GOOGL,Alphabet Class A,stock,GOOGL,,unverified,,https://finance.yahoo.com/quote/GOOGL/,GOOGL
+watch-AMZN,Amazon,stock,AMZN,,unverified,,https://finance.yahoo.com/quote/AMZN/,AMZN
+watch-NVDA,NVIDIA,stock,NVDA,,unverified,,https://finance.yahoo.com/quote/NVDA/,NVDA
+watch-JPM,JPMorgan Chase,stock,JPM,,unverified,,https://finance.yahoo.com/quote/JPM/,JPM
+watch-JNJ,Johnson & Johnson,stock,JNJ,,unverified,,https://finance.yahoo.com/quote/JNJ/,JNJ
+watch-XOM,Exxon Mobil,stock,XOM,,unverified,,https://finance.yahoo.com/quote/XOM/,XOM
+watch-PG,Procter & Gamble,stock,PG,,unverified,,https://finance.yahoo.com/quote/PG/,PG
+watch-CAT,Caterpillar,stock,CAT,,unverified,,https://finance.yahoo.com/quote/CAT/,CAT
+watch-ULVR.L,Unilever (London),stock,ULVR.L,,unverified,,https://finance.yahoo.com/quote/ULVR.L/,ULVR.L
+watch-AZN.L,AstraZeneca (London),stock,AZN.L,,unverified,,https://finance.yahoo.com/quote/AZN.L/,AZN.L
+watch-HSBA.L,HSBC Holdings (London),stock,HSBA.L,,unverified,,https://finance.yahoo.com/quote/HSBA.L/,HSBA.L
+watch-SHEL.L,Shell (London),stock,SHEL.L,,unverified,,https://finance.yahoo.com/quote/SHEL.L/,SHEL.L
+watch-7203.T,Toyota Motor (Tokyo),stock,7203.T,,unverified,,https://finance.yahoo.com/quote/7203.T/,7203.T
+watch-NESN.SW,Nestle (SIX),stock,NESN.SW,,unverified,,https://finance.yahoo.com/quote/NESN.SW/,NESN.SW
+watch-VWRL.L,Vanguard FTSE All-World UCITS ETF (London),etf,VWRL.L,,unverified,,https://finance.yahoo.com/quote/VWRL.L/,VWRL.L
+watch-VUSA.L,Vanguard S&P 500 UCITS ETF (London),etf,VUSA.L,,unverified,,https://finance.yahoo.com/quote/VUSA.L/,VUSA.L
+watch-ISF.L,iShares Core FTSE 100 UCITS ETF (London),etf,ISF.L,,unverified,,https://finance.yahoo.com/quote/ISF.L/,ISF.L
+watch-EIMI.L,iShares Core MSCI Emerging Markets IMI UCITS ETF (London),etf,EIMI.L,,unverified,,https://finance.yahoo.com/quote/EIMI.L/,EIMI.L
+watch-INRG.L,iShares Global Clean Energy Transition UCITS ETF (London),etf,INRG.L,,unverified,,https://finance.yahoo.com/quote/INRG.L/,INRG.L
+watch-SPY,SPDR S&P 500 ETF Trust,etf,SPY,,unverified,,https://finance.yahoo.com/quote/SPY/,SPY
+watch-QQQ,Invesco QQQ Trust,etf,QQQ,,unverified,,https://finance.yahoo.com/quote/QQQ/,QQQ
+watch-IWM,iShares Russell 2000 ETF,etf,IWM,,unverified,,https://finance.yahoo.com/quote/IWM/,IWM
+watch-TLT,iShares 20+ Year Treasury Bond ETF,etf,TLT,,unverified,,https://finance.yahoo.com/quote/TLT/,TLT
+watch-BND,Vanguard Total Bond Market ETF,etf,BND,,unverified,,https://finance.yahoo.com/quote/BND/,BND
+watch-VNQ,Vanguard Real Estate ETF,etf,VNQ,,unverified,,https://finance.yahoo.com/quote/VNQ/,VNQ
+watch-GLD,SPDR Gold Shares,etf,GLD,,unverified,,https://finance.yahoo.com/quote/GLD/,GLD
+watch-VFIAX,Vanguard 500 Index Fund Admiral Shares,fund,VFIAX,,unverified,,https://finance.yahoo.com/quote/VFIAX/,VFIAX
+watch-VBTLX,Vanguard Total Bond Market Index Fund Admiral Shares,fund,VBTLX,,unverified,,https://finance.yahoo.com/quote/VBTLX/,VBTLX
+watch-VWIGX,Vanguard International Growth Fund Investor Shares,fund,VWIGX,,unverified,,https://finance.yahoo.com/quote/VWIGX/,VWIGX
+watch-VSMAX,Vanguard Small-Cap Index Fund Admiral Shares,fund,VSMAX,,unverified,,https://finance.yahoo.com/quote/VSMAX/,VSMAX
+watch-BTC-USD,Bitcoin (USD),crypto,BTC-USD,,unverified,,https://finance.yahoo.com/quote/BTC-USD/,BTC-USD
+watch-ETH-USD,Ethereum (USD),crypto,ETH-USD,,unverified,,https://finance.yahoo.com/quote/ETH-USD/,ETH-USD
+watch-SOL-USD,Solana (USD),crypto,SOL-USD,,unverified,,https://finance.yahoo.com/quote/SOL-USD/,SOL-USD
+watch-ADA-USD,Cardano (USD),crypto,ADA-USD,,unverified,,https://finance.yahoo.com/quote/ADA-USD/,ADA-USD
