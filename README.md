@@ -11,7 +11,17 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-Import an asset CSV, then upload prices or select Yahoo Finance. Filter by class and eligibility, choose an indicator and sort direction, or click table headers. Missing metrics sort last. Export the filtered table as CSV. The app works with CSV alone, without network access.
+On startup, the app loads the bundled `data/assets.csv` research watchlist and automatically requests Yahoo Finance history. No upload is required. The first load needs internet and may take a minute or more because retrieval is sequential. If the provider fails, the watchlist still appears with blank indicators and warnings. Upload an asset CSV to replace the watchlist, or a price CSV to use your own history (the initial price-source choice switches to CSV when a price file is supplied). You can also change the price-source selector manually. Filter by class and eligibility, choose an indicator and sort direction, or click table headers. Missing metrics sort last. Export the filtered table as CSV. The app works with CSV alone, without network access.
+
+## Starter research watchlist
+
+`data/assets.csv` contains 36 illustrative instruments: 16 stocks, 12 ETFs, four mutual funds and four cryptocurrencies. It spans US, UK, Japanese and Swiss company listings and sectors including technology, financials, healthcare, energy, consumer goods and industrials. ETFs cover global/developed/emerging equities, small caps, clean energy, bonds, property and gold exposure. The funds illustrate equity and bond fund histories; crypto symbols use USD pairs.
+
+**Every starter asset is `unverified`. This is a research watchlist, not a list of confirmed UMushroom competition-eligible assets, and not a recommendation.** Some instruments, including US mutual fund share classes and US ETFs, may be unavailable to UK investors or in the competition. Asset diversity and Yahoo coverage do not establish eligibility. ISINs and verification dates are intentionally blank rather than guessed.
+
+Each CSV row links to its exact [Yahoo quote](https://finance.yahoo.com/) in `source` and maps explicitly through `yahoo_ticker`. These links document instrument/provider provenance, not competition eligibility evidence. Fund share classes include [VFIAX](https://finance.yahoo.com/quote/VFIAX/), [VBTLX](https://finance.yahoo.com/quote/VBTLX/), [VWIGX](https://finance.yahoo.com/quote/VWIGX/) and [VSMAX](https://finance.yahoo.com/quote/VSMAX/). Edit the CSV to change the starter list. The app resolves its path relative to `app.py`, independent of the launch directory.
+
+Yahoo history is cached for one hour for each imported universe, including any errors, so filtering and sorting do not repeat downloads. **Refresh market data** clears the current universe's cached result and retrieves it again. The last retrieval attempt is shown in UTC and stays unchanged on cache hits; it is not a guarantee of successful or current prices. Each row's `price_date` shows the latest usable market observation. Partial failures retain successful histories; missing/invalid/stale histories have blank metrics and warnings or a `data_status` explanation. There is no saved offline market snapshot: without network, use the existing CSV price import.
 
 ## Eligibility and asset CSV
 
@@ -31,7 +41,7 @@ These are mapping examples, **not confirmed eligible investments**. `yahoo_ticke
 
 Upload daily observations with `asset_id,date,close,currency`; dates use ISO format and prices must be finite and positive. Legacy V0.1 `asset_id,date,close_gbp` is also accepted as GBP. Match asset IDs exactly. Use one consistent currency and adjustment basis per asset; `GBp` (pence) and `GBP` are different quote units. Missing/mixed currencies or duplicate dates block that asset's metrics. Invalid dates/prices and future observations are discarded; prices are never filled. `data_status` explains unavailable results, and `price_date` identifies the latest usable observation. Prices older than seven calendar days block all metrics.
 
-Optional Yahoo retrieval uses [yfinance](https://github.com/ranaroussi/yfinance) and its [history API](https://ranaroussi.github.io/yfinance/reference/api/yfinance.Ticker.history.html), the only added direct dependency. It requests two years of daily adjusted prices and provider quote currency, one explicit `yahoo_ticker` per asset, with a 15-second history request timeout. Histories are cached for one hour; Refresh clears that cache. CSV and Yahoo are separate sources and never merged. Missing symbols, unsupported funds, provider errors or rate limits produce warnings and blank results. Yahoo access is unofficial and intended for personal research under the provider's applicable terms; there is no service guarantee. Use a permitted CSV if unavailable.
+Optional Yahoo retrieval uses [yfinance](https://github.com/ranaroussi/yfinance) and its [history API](https://ranaroussi.github.io/yfinance/reference/api/yfinance.Ticker.history.html), the only added direct dependency. It requests two years of daily adjusted prices and provider quote currency, one explicit `yahoo_ticker` per asset, with a 15-second history request timeout. Histories are cached for one hour; Refresh market data clears the current universe's cache. CSV and Yahoo are separate sources and never merged. Missing symbols, unsupported funds, provider errors or rate limits produce warnings and blank results. Yahoo access is unofficial and intended for personal research under the provider's applicable terms; there is no service guarantee. Use a permitted CSV if unavailable.
 
 ## Exactly four indicators
 
@@ -49,7 +59,7 @@ Each window requires at least 80% of expected daily observations (101/202 for si
 python -m unittest discover -s tests -v
 ```
 
-Tests use standard-library unittest, pandas and Streamlit's built-in AppTest; no test framework dependency. Synthetic fixtures test calculations and missing-data behavior; provider tests do not need internet.
+Tests use standard-library unittest, pandas and Streamlit's built-in AppTest; no test framework dependency. Synthetic fixtures test calculations and missing-data behavior, default watchlist loading, cached reruns, refresh, provider failure and the existing upload/filter/sort/export flow. Tests mock provider retrieval and do not need internet.
 
 ## Remaining limitations
 

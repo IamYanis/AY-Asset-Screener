@@ -89,11 +89,57 @@ class ScreenerTests(unittest.TestCase):
         self.assertTrue(prices.empty)
         self.assertIn("no yahoo_ticker", errors[0])
 
-    def test_dashboard_starts(self):
+    def test_starter_watchlist(self):
+        assets = load_assets(Path(__file__).resolve().parents[1] / "data" / "assets.csv")
+        self.assertTrue(30 <= len(assets) <= 50)
+        self.assertEqual(set(assets.asset_type), {"stock", "etf", "fund", "crypto"})
+        self.assertTrue(assets.eligibility.eq("unverified").all())
+        self.assertTrue(assets.verified_at.eq("").all())
+        self.assertTrue(assets.yahoo_ticker.ne("").all())
+        self.assertFalse(assets.yahoo_ticker.duplicated().any())
+        self.assertTrue(assets.source.str.startswith("https://finance.yahoo.com/quote/").all())
+
+    def test_dashboard_default_watchlist_cache_and_refresh(self):
+        import streamlit as st
         from streamlit.testing.v1 import AppTest
-        app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / "app.py")).run()
-        self.assertEqual(len(app.exception), 0)
-        self.assertIn("V0.2", app.title[0].value)
+        st.cache_data.clear()
+        def history(assets):
+            dates = pd.bdate_range(end=pd.Timestamp.today().normalize(), periods=300)
+            prices = pd.DataFrame(dict(asset_id=assets.asset_id.iloc[0], date=dates,
+                                       close=100.0, currency="USD"))
+            return prices, ["Example provider warning"]
+        app_path = str(Path(__file__).resolve().parents[1] / "app.py")
+        with patch("data.fetch_prices", side_effect=history) as fetch:
+            app = AppTest.from_file(app_path).run(timeout=10)
+            self.assertEqual(len(app.exception), 0)
+            self.assertIn("V0.2", app.title[0].value)
+            table = app.dataframe[0].value
+            self.assertEqual(len(table), 36)
+            self.assertTrue(table.eligibility.eq("unverified").all())
+            self.assertTrue(table.loc[table.asset_id.eq("watch-AAPL"), INDICATORS].eq(0).all().all())
+            self.assertTrue(table.loc[table.asset_id.ne("watch-AAPL"), INDICATORS].isna().all().all())
+            self.assertTrue(any("Example provider warning" in warning.value for warning in app.warning))
+            retrieved = next(c.value for c in app.caption if "Last retrieval attempt:" in c.value)
+            self.assertIn("UTC", retrieved)
+            app.selectbox[0].set_value("return_6m_pct").run()
+            self.assertEqual(fetch.call_count, 1)
+            self.assertIn(retrieved, [c.value for c in app.caption])
+            app.button[0].click().run()
+            self.assertEqual(fetch.call_count, 2)
+            self.assertEqual(len(app.exception), 0)
+        st.cache_data.clear()
+
+    def test_dashboard_retrieval_failure_keeps_watchlist(self):
+        import streamlit as st
+        from streamlit.testing.v1 import AppTest
+        st.cache_data.clear()
+        with patch("data.fetch_prices", return_value=(pd.DataFrame(), ["Provider unavailable"])):
+            app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / "app.py")).run()
+            self.assertEqual(len(app.exception), 0)
+            self.assertEqual(len(app.dataframe[0].value), 36)
+            self.assertTrue(app.dataframe[0].value[INDICATORS].isna().all().all())
+            self.assertTrue(any("Provider unavailable" in warning.value for warning in app.warning))
+        st.cache_data.clear()
 
     def test_dashboard_import_filter_sort_export(self):
         from streamlit.testing.v1 import AppTest

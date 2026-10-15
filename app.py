@@ -1,3 +1,4 @@
+from pathlib import Path
 import pandas as pd
 import streamlit as st
 from data import ASSET_COLUMNS, PRICE_COLUMNS, TYPES, load_assets, load_prices, fetch_prices
@@ -7,33 +8,36 @@ st.set_page_config(page_title="A-Y Asset Screener", layout="wide")
 st.title("A-Y Asset Screener — V0.2")
 st.caption("Historical comparisons. Eligibility must be confirmed for the UK 2026 competition.")
 st.info("No complete official eligible universe has been confirmed. 'verified' means your CSV records competition-specific evidence; listing on UMushroom alone is insufficient.")
+st.info("The bundled starter watchlist is for research only. Every starter asset is unverified for competition eligibility. Upload an asset CSV to replace it.")
 asset_file = st.file_uploader("Import asset universe CSV", type="csv")
 price_file = st.file_uploader("Import price histories CSV (optional)", type="csv")
 st.download_button("Download blank asset CSV", ASSET_COLUMNS + ",yahoo_ticker\n", "assets_template.csv")
 st.download_button("Download blank price CSV", PRICE_COLUMNS + "\n", "prices_template.csv")
-mode = st.radio("Price source", ["CSV", "Yahoo Finance"], horizontal=True)
+mode = st.radio("Price source", ["CSV", "Yahoo Finance"], index=0 if price_file is not None else 1, horizontal=True)
 st.caption("Yahoo mode requires an explicit yahoo_ticker column. CSV and Yahoo histories are never mixed.")
 
 @st.cache_data(ttl=3600, show_spinner="Retrieving daily prices…")
 def yahoo_history(assets):
-    return fetch_prices(assets)
+    prices, errors = fetch_prices(assets)
+    return prices, errors, pd.Timestamp.now(tz="UTC").strftime("%Y-%m-%d %H:%M:%S UTC")
 
-if asset_file is None:
-    st.info("Import an asset CSV to start.")
-    st.stop()
 try:
-    assets = load_assets(asset_file)
+    assets = load_assets(asset_file if asset_file is not None else Path(__file__).resolve().parent / "data" / "assets.csv")
+    st.caption("Asset universe: " + ("uploaded CSV" if asset_file is not None else "bundled research watchlist (data/assets.csv)"))
     prices = pd.DataFrame()
     if mode == "Yahoo Finance":
-        if st.button("Refresh Yahoo history"):
-            yahoo_history.clear()
-        prices, errors = yahoo_history(assets)
+        if st.button("Refresh market data"):
+            yahoo_history.clear(assets)
+        prices, errors, retrieved_at = yahoo_history(assets)
+        st.caption(f"Last retrieval attempt: {retrieved_at}. Cached for one hour; price_date shows each asset's latest observation.")
         for error in errors:
             st.warning(error)
     elif price_file is not None:
         prices = load_prices(price_file)
     result = screen_assets(assets, prices)
-except (ValueError, pd.errors.ParserError) as exc:
+    if mode == "CSV" and price_file is None:
+        st.info("Upload a price CSV or choose Yahoo Finance to retrieve prices.")
+except (ValueError, OSError, pd.errors.ParserError) as exc:
     st.error(str(exc))
     st.stop()
 
