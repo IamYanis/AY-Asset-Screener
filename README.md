@@ -11,7 +11,7 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-On startup, the app loads the bundled `data/assets.csv` research watchlist and automatically requests Yahoo Finance history. No upload is required. The first load needs internet and may take a minute or more because retrieval is sequential. If the provider fails, the watchlist still appears with blank indicators and warnings. Upload an asset CSV to replace the watchlist, or a price CSV to use your own history (the initial price-source choice switches to CSV when a price file is supplied). You can also change the price-source selector manually. Filter by class and eligibility, choose an indicator and sort direction, or click table headers. Missing metrics sort last. Export the filtered table as CSV. The app works with CSV alone, without network access.
+On startup, the app loads the bundled `data/assets.csv` research watchlist and automatically requests Yahoo Finance history. No upload is required. The first load needs internet and may take a minute or more because retrieval is sequential. If the provider fails, the watchlist still appears with blank indicators and warnings. Upload an asset CSV to replace the watchlist, or upload a price CSV and select CSV to use your own history. Yahoo Finance is the default even when a price CSV is uploaded. You can also change the price-source selector manually. Filter by class and eligibility, choose an indicator and sort direction, or click table headers. Missing metrics sort last. Export the filtered table as CSV. The app works with CSV alone, without network access.
 
 ## Starter research watchlist
 
