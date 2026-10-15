@@ -21,7 +21,7 @@ On startup, the app loads the bundled `data/assets.csv` research watchlist and a
 
 Each CSV row links to its exact [Yahoo quote](https://finance.yahoo.com/) in `source` and maps explicitly through `yahoo_ticker`. These links document instrument/provider provenance, not competition eligibility evidence. Fund share classes include [VFIAX](https://finance.yahoo.com/quote/VFIAX/), [VBTLX](https://finance.yahoo.com/quote/VBTLX/), [VWIGX](https://finance.yahoo.com/quote/VWIGX/) and [VSMAX](https://finance.yahoo.com/quote/VSMAX/). Edit the CSV to change the starter list. The app resolves its path relative to `app.py`, independent of the launch directory.
 
-Yahoo history is cached for one hour for each imported universe, including any errors, so filtering and sorting do not repeat downloads. **Refresh market data** clears the current universe's cached result and retrieves it again. The last retrieval attempt is shown in UTC and stays unchanged on cache hits; it is not a guarantee of successful or current prices. Each row's `price_date` shows the latest usable market observation. Partial failures retain successful histories; missing/invalid/stale histories have blank metrics and warnings or a `data_status` explanation. There is no saved offline market snapshot: without network, use the existing CSV price import.
+Yahoo history is cached for one hour for each imported universe, including errors for individual missing assets in a partial result, so filtering and sorting do not repeat successful downloads. Completely empty retrievals raise a visible error and are not cached; the next rerun retries them. **Refresh market data** clears the current universe's cached result and retrieves it again. The selected price source and number of Yahoo observations returned are shown above the table. CSV mode does not retrieve Yahoo data; if no price file is uploaded, the dashboard and export explicitly say so. Yahoo calls request raised provider exceptions rather than terminal-only logging; errors include the asset, symbol, exception type and message. The last retrieval attempt is shown in UTC and stays unchanged on cache hits; it is not a guarantee of successful or current prices. Each row's `price_date` shows the latest usable market observation. Partial failures retain successful histories; missing/invalid/stale histories have blank metrics and warnings or a `data_status` explanation. There is no saved offline market snapshot: without network, use the existing CSV price import.
 
 ## Eligibility and asset CSV
 
@@ -59,7 +59,7 @@ Each window requires at least 80% of expected daily observations (101/202 for si
 python -m unittest discover -s tests -v
 ```
 
-Tests use standard-library unittest, pandas and Streamlit's built-in AppTest; no test framework dependency. Synthetic fixtures test calculations and missing-data behavior, default watchlist loading, cached reruns, refresh, provider failure and the existing upload/filter/sort/export flow. Tests mock provider retrieval and do not need internet.
+Tests use standard-library unittest, pandas and Streamlit's built-in AppTest; no test framework dependency. Synthetic fixtures test calculations and missing-data behavior, default watchlist loading, cached reruns, refresh, provider errors propagating through retrieval into the dashboard, retry after an empty failure, explicit CSV-without-upload status and the existing upload/filter/sort/export flow. Tests mock provider retrieval and do not need internet.
 
 ## Remaining limitations
 

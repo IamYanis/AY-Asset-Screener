@@ -19,24 +19,41 @@ st.caption("Yahoo mode requires an explicit yahoo_ticker column. CSV and Yahoo h
 @st.cache_data(ttl=3600, show_spinner="Retrieving daily prices…")
 def yahoo_history(assets):
     prices, errors = fetch_prices(assets)
+    if prices.empty:
+        detail = "\n".join(errors) or "The provider returned an empty history without an error message."
+        # Streamlit does not cache exceptions, so a temporary outage can recover.
+        raise ValueError("Yahoo Finance retrieval failed; no price observations returned.\n" + detail)
     return prices, errors, pd.Timestamp.now(tz="UTC").strftime("%Y-%m-%d %H:%M:%S UTC")
 
 try:
     assets = load_assets(asset_file if asset_file is not None else Path(__file__).resolve().parent / "data" / "assets.csv")
     st.caption("Asset universe: " + ("uploaded CSV" if asset_file is not None else "bundled research watchlist (data/assets.csv)"))
+    st.caption(f"Selected price source: {mode}")
     prices = pd.DataFrame()
     if mode == "Yahoo Finance":
         if st.button("Refresh market data"):
             yahoo_history.clear(assets)
-        prices, errors, retrieved_at = yahoo_history(assets)
-        st.caption(f"Last retrieval attempt: {retrieved_at}. Cached for one hour; price_date shows each asset's latest observation.")
-        for error in errors:
-            st.warning(error)
+        try:
+            prices, errors, retrieved_at = yahoo_history(assets)
+        except ValueError as exc:
+            st.caption("Last retrieval attempt: " + pd.Timestamp.now(tz="UTC").strftime("%Y-%m-%d %H:%M:%S UTC") + " (failed; not cached)")
+            st.error(str(exc))
+            st.info("No empty result was cached. Use Refresh market data to retry, check network access to Yahoo Finance, or upload a price CSV and select CSV.")
+        else:
+            st.caption(f"Last retrieval attempt: {retrieved_at}. Cached for one hour; price_date shows each asset's latest observation.")
+            st.caption(f"Yahoo returned {len(prices)} price observations for {prices.asset_id.nunique()} of {len(assets)} assets.")
+            for error in errors:
+                st.warning(error)
     elif price_file is not None:
         prices = load_prices(price_file)
     result = screen_assets(assets, prices)
-    if mode == "CSV" and price_file is None:
-        st.info("Upload a price CSV or choose Yahoo Finance to retrieve prices.")
+    if mode == "Yahoo Finance" and prices.empty:
+        result["data_status"] = "Yahoo retrieval failed; see dashboard errors"
+    elif mode == "CSV" and price_file is None:
+        st.error("CSV is selected but no price CSV is uploaded. Yahoo retrieval was not attempted. Select Yahoo Finance to retrieve market data.")
+        result["data_status"] = "CSV selected; no price file uploaded"
+    elif result.data_status.eq("No usable prices").all() and not result.empty:
+        st.error(f"{mode} supplied no usable prices for the selected asset IDs. Check price dates, positive finite closes and matching asset_id values.")
 except (ValueError, OSError, pd.errors.ParserError) as exc:
     st.error(str(exc))
     st.stop()
