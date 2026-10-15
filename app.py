@@ -1,24 +1,38 @@
 import pandas as pd
 import streamlit as st
-from screener import load_assets, rank_assets, TYPES
+from data import ASSET_COLUMNS, PRICE_COLUMNS, TYPES, load_assets, load_prices, fetch_prices
+from screener import INDICATORS, screen_assets
 
 st.set_page_config(page_title="A-Y Asset Screener", layout="wide")
-st.title("A-Y Asset Screener — V0.1")
-st.caption("Multi-asset competition research. Eligibility must be verified in UMushroom.")
-
+st.title("A-Y Asset Screener — V0.2")
+st.caption("Historical comparisons. Eligibility must be confirmed for the UK 2026 competition.")
+st.info("No complete official eligible universe has been confirmed. 'verified' means your CSV records competition-specific evidence; listing on UMushroom alone is insufficient.")
 asset_file = st.file_uploader("Import asset universe CSV", type="csv")
-price_file = st.file_uploader("Import GBP price histories CSV (optional)", type="csv")
-st.download_button("Download blank asset CSV", "asset_id,name,asset_type,ticker,isin,eligibility,verified_at,source\n", "assets_template.csv")
-st.download_button("Download blank price CSV", "asset_id,date,close_gbp\n", "prices_template.csv")
+price_file = st.file_uploader("Import price histories CSV (optional)", type="csv")
+st.download_button("Download blank asset CSV", ASSET_COLUMNS + ",yahoo_ticker\n", "assets_template.csv")
+st.download_button("Download blank price CSV", PRICE_COLUMNS + "\n", "prices_template.csv")
+mode = st.radio("Price source", ["CSV", "Yahoo Finance"], horizontal=True)
+st.caption("Yahoo mode requires an explicit yahoo_ticker column. CSV and Yahoo histories are never mixed.")
+
+@st.cache_data(ttl=3600, show_spinner="Retrieving daily prices…")
+def yahoo_history(assets):
+    return fetch_prices(assets)
 
 if asset_file is None:
-    st.info("Import an asset universe CSV to start. Only assets explicitly marked 'verified' will be described as eligible.")
+    st.info("Import an asset CSV to start.")
     st.stop()
-
 try:
     assets = load_assets(asset_file)
-    prices = pd.read_csv(price_file) if price_file is not None else pd.DataFrame()
-    result = rank_assets(assets, prices)
+    prices = pd.DataFrame()
+    if mode == "Yahoo Finance":
+        if st.button("Refresh Yahoo history"):
+            yahoo_history.clear()
+        prices, errors = yahoo_history(assets)
+        for error in errors:
+            st.warning(error)
+    elif price_file is not None:
+        prices = load_prices(price_file)
+    result = screen_assets(assets, prices)
 except (ValueError, pd.errors.ParserError) as exc:
     st.error(str(exc))
     st.stop()
@@ -26,10 +40,12 @@ except (ValueError, pd.errors.ParserError) as exc:
 status = st.multiselect("Eligibility", ["verified", "unverified", "ineligible"], default=["verified", "unverified"])
 classes = st.multiselect("Asset class", sorted(TYPES), default=sorted(TYPES))
 result = result[result.eligibility.isin(status) & result.asset_type.isin(classes)]
-col1, col2, col3 = st.columns(3)
-col1.metric("Imported assets", len(assets))
-col2.metric("Verified eligible", (assets.eligibility == "verified").sum())
-col3.metric("Unverified", (assets.eligibility == "unverified").sum())
-st.dataframe(result, use_container_width=True, hide_index=True)
+sort = st.selectbox("Sort by", ["name"] + INDICATORS)
+ascending = st.checkbox("Ascending", value=True)
+result = result.sort_values(sort, ascending=ascending, na_position="last")
+st.caption(f"{len(result)} displayed / {len(assets)} imported; {assets.eligibility.eq('verified').sum()} verified eligible in the imported universe.")
+st.dataframe(result, use_container_width=True, hide_index=True,
+    column_config={column: st.column_config.NumberColumn(column, format="%.2f%%") for column in INDICATORS})
 st.download_button("Export filtered results", result.to_csv(index=False), "screened_assets.csv", mime="text/csv")
-st.caption("The 30-observation return is an illustrative price-history sort, not a comparable asset-quality score. Missing history remains blank. All prices must be supplied in GBP; no automatic FX conversion is performed.")
+st.caption("Returns use calendar months. Volatility and drawdown use the trailing 12 months; drawdown is negative. Blank metrics mean unavailable. See data_status and price_date. No missing prices are filled.")
+st.warning("Metrics are in each asset's quote currency, with no GBP FX conversion. Yahoo uses adjusted prices; CSV adjustment basis is supplied by you. These may differ from competition performance. Crypto volatility uses 365 days; other assets use 252. No score or buy/sell recommendations.")
