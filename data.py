@@ -48,7 +48,7 @@ def fetch_prices(assets):
             continue
         try:
             ticker = yf.Ticker(symbol)
-            history = ticker.history(period="2y", interval="1d", auto_adjust=True, timeout=15)
+            history = ticker.history(period="2y", interval="1d", auto_adjust=True, timeout=15, raise_errors=True)
             if history.empty:
                 raise ValueError("no history returned")
             currency = ticker.get_history_metadata().get("currency", "")
@@ -58,6 +58,6 @@ def fetch_prices(assets):
                 "date": history.index.tz_localize(None).normalize(),
                 "close": history["Close"].to_numpy(), "currency": currency}))
         except Exception as exc:
-            errors.append(f"{asset.asset_id} ({symbol}): {exc}")
+            errors.append(f"{asset.asset_id} ({symbol}): {type(exc).__name__}: {exc}")
     return (pd.concat(frames, ignore_index=True) if frames else
             pd.DataFrame(columns=PRICE_COLUMNS.split(","))), errors

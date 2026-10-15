@@ -79,6 +79,7 @@ class ScreenerTests(unittest.TestCase):
         with patch("yfinance.Ticker", return_value=ticker) as factory:
             prices, errors = fetch_prices(assets)
             factory.assert_called_once_with("EXAMPLE")
+            self.assertTrue(ticker.history.call_args.kwargs["raise_errors"])
             self.assertEqual(len(prices), 2)
             self.assertEqual(errors, [])
             ticker.history.side_effect = RuntimeError("unavailable")
@@ -129,16 +130,54 @@ class ScreenerTests(unittest.TestCase):
             self.assertEqual(len(app.exception), 0)
         st.cache_data.clear()
 
-    def test_dashboard_retrieval_failure_keeps_watchlist(self):
+    def test_dashboard_provider_failure_is_visible_and_not_cached(self):
         import streamlit as st
         from streamlit.testing.v1 import AppTest
         st.cache_data.clear()
-        with patch("data.fetch_prices", return_value=(pd.DataFrame(), ["Provider unavailable"])):
+        failed = True
+        ticker = MagicMock()
+        def history(**kwargs):
+            if failed:
+                # yfinance normally logs some failures and returns empty data.
+                if kwargs.get("raise_errors"):
+                    raise RuntimeError("Yahoo connection refused")
+                return pd.DataFrame()
+            dates = pd.bdate_range(end=pd.Timestamp.today().normalize(), periods=300)
+            # Include weekends so crypto also meets its 365-day coverage rule.
+            dates = pd.date_range(end=dates[-1], periods=400)
+            return pd.DataFrame({"Close": 100.0}, index=dates)
+        ticker.history.side_effect = history
+        ticker.get_history_metadata.return_value = {"currency": "USD"}
+        with patch("yfinance.Ticker", return_value=ticker):
             app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / "app.py")).run()
             self.assertEqual(len(app.exception), 0)
+            self.assertEqual(ticker.history.call_count, 36)
             self.assertEqual(len(app.dataframe[0].value), 36)
             self.assertTrue(app.dataframe[0].value[INDICATORS].isna().all().all())
-            self.assertTrue(any("Provider unavailable" in warning.value for warning in app.warning))
+            self.assertTrue(app.dataframe[0].value.data_status.str.contains("Yahoo retrieval failed").all())
+            self.assertTrue(any("RuntimeError: Yahoo connection refused" in error.value for error in app.error))
+            app.selectbox[0].set_value("return_6m_pct").run()
+            self.assertEqual(ticker.history.call_count, 72)  # Empty result was not cached.
+            failed = False
+            app.button[0].click().run()
+            self.assertEqual(ticker.history.call_count, 108)
+            self.assertTrue(app.dataframe[0].value[INDICATORS].eq(0).all().all())
+            self.assertEqual(len(app.error), 0)
+            app.selectbox[0].set_value("return_12m_pct").run()
+            self.assertEqual(ticker.history.call_count, 108)  # Success remains cached.
+        st.cache_data.clear()
+
+    def test_csv_without_upload_explains_why_yahoo_was_not_called(self):
+        import streamlit as st
+        from streamlit.testing.v1 import AppTest
+        st.cache_data.clear()
+        with patch("data.fetch_prices", return_value=(pd.DataFrame(), ["Provider unavailable"])) as fetch:
+            app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / "app.py")).run()
+            fetch.reset_mock()
+            app.radio[0].set_value("CSV").run()
+            fetch.assert_not_called()
+            self.assertTrue(any("Yahoo retrieval was not attempted" in error.value for error in app.error))
+            self.assertTrue(app.dataframe[0].value.data_status.eq("CSV selected; no price file uploaded").all())
         st.cache_data.clear()
 
     def test_dashboard_import_filter_sort_export(self):
