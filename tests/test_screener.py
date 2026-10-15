@@ -114,6 +114,7 @@ class ScreenerTests(unittest.TestCase):
             app = AppTest.from_file(app_path).run(timeout=10)
             self.assertEqual(len(app.exception), 0)
             self.assertIn("V0.2", app.title[0].value)
+            self.assertEqual(app.radio[0].value, "Yahoo Finance")
             table = app.dataframe[0].value
             self.assertEqual(len(table), 36)
             self.assertTrue(table.eligibility.eq("unverified").all())
@@ -188,8 +189,15 @@ class ScreenerTests(unittest.TestCase):
         app_path = str(Path(__file__).resolve().parents[1] / "app.py")
         def upload(label, **kwargs):
             return io.StringIO(asset_csv if "universe" in label else prices.to_csv(index=False))
-        with patch("streamlit.file_uploader", side_effect=upload):
+        with patch("streamlit.file_uploader", side_effect=upload), patch(
+            "data.fetch_prices", return_value=(prices.assign(currency="EUR"), [])
+        ) as fetch:
             app = AppTest.from_file(app_path).run()
+            self.assertEqual(app.radio[0].value, "Yahoo Finance")
+            self.assertEqual(app.dataframe[0].value.currency.iloc[0], "EUR")
+            app.radio[0].set_value("CSV").run()
+            fetch.assert_called_once()
+            self.assertEqual(app.dataframe[0].value.currency.iloc[0], "USD")
             self.assertEqual(len(app.exception), 0)
             self.assertEqual(len(app.dataframe[0].value), 1)
             app.selectbox[0].set_value("return_6m_pct").run()

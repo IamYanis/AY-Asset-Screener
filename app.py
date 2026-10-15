@@ -13,7 +13,7 @@ asset_file = st.file_uploader("Import asset universe CSV", type="csv")
 price_file = st.file_uploader("Import price histories CSV (optional)", type="csv")
 st.download_button("Download blank asset CSV", ASSET_COLUMNS + ",yahoo_ticker\n", "assets_template.csv")
 st.download_button("Download blank price CSV", PRICE_COLUMNS + "\n", "prices_template.csv")
-mode = st.radio("Price source", ["CSV", "Yahoo Finance"], index=0 if price_file is not None else 1, horizontal=True)
+mode = st.radio("Price source", ["CSV", "Yahoo Finance"], index=1, horizontal=True)
 st.caption("Yahoo mode requires an explicit yahoo_ticker column. CSV and Yahoo histories are never mixed.")
 
 @st.cache_data(ttl=3600, show_spinner="Retrieving daily prices…")
