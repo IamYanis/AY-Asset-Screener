@@ -64,3 +64,7 @@ Tests use standard-library unittest, pandas and Streamlit's built-in AppTest; no
 ## Remaining limitations
 
 No verified bulk universe, automatic eligibility validation, FX conversion, exchange calendars, database or scraping. Confirm current competition rules and exact share classes with organisers. Comparisons are in each asset's quote currency, **not GBP investor returns**; currency moves and differing observation dates may change relative outcomes. Yahoo adjustments may incorporate distributions/splits; CSV basis is the user's responsibility. Neither is guaranteed to reproduce UMushroom execution, fees, dividends or valuation. Historical performance does not predict returns. Keep the universe small: retrieval is sequential and has no retry infrastructure.
+
+## Institutional research — Stage 1
+
+The separate offline [research pipeline](research/README.md) ingests the five local institutional snapshots and writes source-specific datasets plus a [data-quality report](research/data_quality_report.md). It adds no dashboard features, scores or recommendations. Optional PDF/Excel dependencies are in `research/requirements.txt`; downloaded and processed research files stay out of Git.

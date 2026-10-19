@@ -1,0 +1,33 @@
+{
+  "imf": {
+    "pattern": "imf/*.csv",
+    "url": "https://data.imf.org/en/datasets/IMF.RES:WEO",
+    "date_evidence": "PUBLICATION_DATE and UPDATE_DATE in the supplied CSV."
+  },
+  "oecd": {
+    "pattern": "oecd/*.csv",
+    "url": "https://data-explorer.oecd.org/?df[ag]=OECD.ECO.MAD&df[id]=DSD_EO@DF_EO&df[vs]=1.5",
+    "publication_date": "2026-06-03",
+    "date_evidence": "Economic Outlook 119 / Edition 2026/1 publication; CSV has no publication date.",
+    "metadata_url": "https://www.oecd.org/en/topics/sub-issues/economic-outlook.html"
+  },
+  "schwab": {
+    "pattern": "schwab/schwab_sector_outlook_2026-10-02.pdf",
+    "url": "https://www.schwab.com/learn/story/stock-sector-outlook",
+    "date_evidence": "Article byline p. 1; ratings date p. 3. PDF creation timestamp is print time."
+  },
+  "vanguard": {
+    "pattern": "vanguard/vanguard_return_forecasts_2026-06-30.pdf",
+    "url": "https://corporate.vanguard.com/content/corporatesite/us/en/corp/vemo/vemo-return-forecasts.html",
+    "date_evidence": "Article date p. 1; model-run date pp. 2-3. Filename is not publication date."
+  },
+  "jpmorgan": {
+    "pattern": "jpmorgan/matrix-usd.xlsx",
+    "url": "https://am.jpmorgan.com/us/en/asset-management/institutional/insights/portfolio-insights/ltcma/",
+    "publication_date": "2025-10-20",
+    "as_of_date": "2025-09-30",
+    "date_evidence": "Workbook identifies 2026 edition and USD, but not release date or horizon. Official release confirms 20 October 2025 and 10-15 years; report pp. 82-83 confirms as-of 30 September 2025, nominal USD basis and column ordering. File modified time is not publication.",
+    "metadata_url": "https://am.jpmorgan.com/us/en/asset-management/adv/about-us/media/press-releases/jp-morgan-releases-2026-long-term-capital-market-assumptions/",
+    "report_url": "https://am.jpmorgan.com/content/dam/jpm-am-aem/global/en/insights/portfolio-insights/ltcma/noindex/ltcma-full-report.pdf"
+  }
+}
