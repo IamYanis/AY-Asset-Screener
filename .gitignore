@@ -4,3 +4,7 @@ __pycache__/
 .DS_Store
 .env
 .streamlit/secrets.toml
+
+# Downloaded institutional research and derived data stay local pending rights review.
+research/institutional/
+research/processed/

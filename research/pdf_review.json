@@ -1,0 +1,37 @@
+{
+  "review_date": "2026-10-15",
+  "method": "Local PDF renders inspected against extracted text. Schwab ratings: pp. 2-3. Vanguard dates and narrative ranges: pp. 1-2; nominal USD basis: pp. 3-4. Chart-only numbers are not digitised. Supporting prose is extracted text, not an independently validated forecast.",
+  "schwab": {
+    "sha256": "74733eaed6c919576a456d01296c0ce0b70eed32db11fcdb0dd8a6319c42f593",
+    "ratings": {
+      "Communication Services": "Less Favored",
+      "Consumer Discretionary": "Least Favored",
+      "Consumer Staples": "Neutral",
+      "Energy": "More Favored",
+      "Financials": "More Favored",
+      "Health Care": "More Favored",
+      "Industrials": "More Favored",
+      "Information Technology": "Neutral",
+      "Materials": "More Favored",
+      "Real Estate": "Least Favored",
+      "Utilities": "Less Favored"
+    }
+  },
+  "vanguard": {
+    "sha256": "2997f790bb6ca9077e42847884e54ca666ae8dab21799492392a48d1e8cd0d92",
+    "ranges": {
+      "U.S. equities": [
+        4.2,
+        6.2
+      ],
+      "Developed markets ex-U.S. equities (unhedged)": [
+        4.5,
+        6.5
+      ],
+      "Emerging markets equities (unhedged)": [
+        2.0,
+        4.0
+      ]
+    }
+  }
+}
